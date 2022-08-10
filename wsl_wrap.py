@@ -6,7 +6,7 @@ import platform
 
 
 def relaunch_in_wsl_if_windows():
-    if platform.platform() != "Windows":
+    if platform.system() != "Windows":
         return
 
     path_to_script = __main__.__file__
