@@ -10,14 +10,15 @@ from .toolchain_dependencies import get_dependencies_for_toolchain
 
 class ToolchainParams:
     def __init__(self, type, target_arch, target_platform, root_dir,
-                 tune_for_native, skip_dependencies, keep_sources,
-                 keep_build):
+                 tune_for_native, skip_dependencies, sources_dir,
+                 keep_sources, keep_build):
         self.type = type
         self.target_arch = target_arch
         self.target_platform = target_platform
         self.root_dir = root_dir
         self.tune_for_native = tune_for_native
         self.skip_dependencies = skip_dependencies
+        self.sources_dir = sources_dir
         self.keep_sources = keep_sources
         self.keep_build = keep_build
 
@@ -304,8 +305,8 @@ def _ensure_gcc_toolchain(params: ToolchainParams):
 
     gcc_dir = "gcc_sources"
     binutils_dir = "binutils_sources"
-    gcc_dir_full_path = os.path.join(params.root_dir, gcc_dir)
-    binutils_dir_full_path = os.path.join(params.root_dir, binutils_dir)
+    gcc_dir_full_path = os.path.join(params.sources_dir, gcc_dir)
+    binutils_dir_full_path = os.path.join(params.sources_dir, binutils_dir)
 
     native_platform = platform.system()
     _download_gcc_toolchain_sources(native_platform, params.root_dir,

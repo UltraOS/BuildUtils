@@ -23,7 +23,7 @@ def add_arch_args(parser):
                         help="architecture to build the toolchain for")
 
 
-def params_from_args(args, platform, tc_root, arch=None):
+def params_from_args(args, platform, tc_root, tc_sources_root, arch=None):
     if arch is None and hasattr(args, "arch"):
         arch = args.arch
 
@@ -31,6 +31,7 @@ def params_from_args(args, platform, tc_root, arch=None):
         args.toolchain, arch, platform,
         tc_root, not args.no_tune_native,
         args.skip_toolchain_dependencies,
+        tc_sources_root,
         args.keep_toolchain_sources,
-        args.keep_toolchain_build
+        args.keep_toolchain_build,
     )
