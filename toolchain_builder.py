@@ -309,7 +309,7 @@ def _ensure_gcc_toolchain(params: ToolchainParams):
     binutils_dir_full_path = os.path.join(params.sources_dir, binutils_dir)
 
     native_platform = platform.system()
-    _download_gcc_toolchain_sources(native_platform, params.root_dir,
+    _download_gcc_toolchain_sources(native_platform, params.sources_dir,
                                     gcc_dir_full_path, binutils_dir_full_path)
 
     os.makedirs(params.root_dir, exist_ok=True)
