@@ -9,9 +9,11 @@ from .toolchain_dependencies import get_dependencies_for_toolchain
 
 
 class ToolchainParams:
-    def __init__(self, type, target_arch, target_platform, root_dir,
-                 tune_for_native, skip_dependencies, sources_dir,
-                 keep_sources, keep_build):
+    def __init__(
+        self, type: str, target_arch: str, target_platform: str,
+        root_dir: str, tune_for_native: bool, skip_dependencies: bool,
+        sources_dir: str, keep_sources: bool, keep_build: bool
+    ):
         self.type = type
         self.target_arch = target_arch
         self.target_platform = target_platform
@@ -44,15 +46,15 @@ GCC_DARWIN_PATCH = \
 
  /* Yes, this is really supposed to work.  */
  /* This allows for a pagesize of 16384, which we have on Darwin20, but should
-"""
+"""  # noqa: E122
 
 
-def _apply_patch(target_dir, patch):
+def _apply_patch(target_dir: str, patch: str) -> None:
     subprocess.check_output(["patch", "-p0"], input=patch,
                             cwd=target_dir, text=True)
 
 
-def is_supported_system():
+def is_supported_system() -> bool:
     this_platform = platform.system()
     ret = this_platform in SUPPORTED_SYSTEMS
 
@@ -62,7 +64,7 @@ def is_supported_system():
     return ret
 
 
-def _ensure_dependencies(params: ToolchainParams):
+def _ensure_dependencies(params: ToolchainParams) -> None:
     if params.skip_dependencies:
         return
 
@@ -70,7 +72,7 @@ def _ensure_dependencies(params: ToolchainParams):
     install_dependencies(deps)
 
 
-def _clone_mingw_w64(target_dir):
+def _clone_mingw_w64(target_dir: str) -> None:
     if os.path.exists(target_dir):
         print("mingw-w64 already cloned, skipping")
         return
@@ -80,7 +82,9 @@ def _clone_mingw_w64(target_dir):
                     target_dir], check=True)
 
 
-def _install_mingw_headers(source_dir, platform_dir, target_dir, env):
+def _install_mingw_headers(
+    source_dir: str, platform_dir: str, target_dir: str, env: dict
+) -> None:
     mingw_headers_dir = os.path.join(target_dir, "mingw_headers")
     os.makedirs(mingw_headers_dir, exist_ok=True)
     configure_path = os.path.join(source_dir, "mingw-w64-headers", "configure")
@@ -94,7 +98,10 @@ def _install_mingw_headers(source_dir, platform_dir, target_dir, env):
     shutil.rmtree(mingw_headers_dir)
 
 
-def _install_mingw_libs(source_dir, target, platform_dir, target_dir, env):
+def _install_mingw_libs(
+    source_dir: str, target: str, platform_dir: str,
+    target_dir: str, env: dict
+) -> None:
     mingw_crt_dir = os.path.join(target_dir, "mingw_crt")
     os.makedirs(mingw_crt_dir, exist_ok=True)
     configure_path = os.path.join(source_dir, "mingw-w64-crt", "configure")
@@ -113,8 +120,10 @@ def _install_mingw_libs(source_dir, target, platform_dir, target_dir, env):
     shutil.rmtree(mingw_crt_dir)
 
 
-def _build_binutils(binutils_sources, binutils_target_dir, target,
-                    platform_root, env):
+def _build_binutils(
+    binutils_sources: str, binutils_target_dir: str, target: str,
+    platform_root: str, env: dict
+) -> None:
     configure_full_path = os.path.join(binutils_sources, "configure")
 
     print("Building binutils...")
@@ -131,7 +140,7 @@ def _build_binutils(binutils_sources, binutils_target_dir, target,
     subprocess.run(["make", "install"], cwd=binutils_target_dir, check=True)
 
 
-def _is_gcc_toolchain_built(tc_root, prefix) -> bool:
+def _is_gcc_toolchain_built(tc_root: str, prefix: str) -> bool:
     full_path = os.path.join(tc_root, "bin", f"{prefix}-")
 
     # TODO: a more "reliable" check?
@@ -149,7 +158,9 @@ def _get_gcc_prefix(params: ToolchainParams) -> str:
     return prefix_template.format(platform=params.target_platform)
 
 
-def _download_and_extract(url, target_file, target_dir, platform):
+def _download_and_extract(
+    url: str, target_file: str, target_dir: str, platform: str
+) -> bool:
     if os.path.exists(target_dir):
         print(f"{target_dir} already exists")
         return False
@@ -175,10 +186,15 @@ def _download_and_extract(url, target_file, target_dir, platform):
     return True
 
 
-def _download_gcc_toolchain_sources(platform, workdir, gcc_target_dir,
-                                    binutils_target_dir):
-    gcc_url = f"ftp://ftp.gnu.org/gnu/gcc/gcc-{GCC_VERSION}/gcc-{GCC_VERSION}.tar.gz"
-    binutils_url = f"https://ftp.gnu.org/gnu/binutils/binutils-{BINUTILS_VERSION}.tar.gz"
+def _download_gcc_toolchain_sources(
+    platform: str, workdir: str, gcc_target_dir: str,
+    binutils_target_dir: str
+) -> None:
+    gcc_url = f"ftp://ftp.gnu.org/gnu/gcc/gcc-{GCC_VERSION}/"
+    gcc_url += f"gcc-{GCC_VERSION}.tar.gz"
+
+    binutils_url = "https://ftp.gnu.org/gnu/binutils/"
+    binutils_url += f"binutils-{BINUTILS_VERSION}.tar.gz"
 
     full_gcc_tarball_path = os.path.join(workdir, "gcc.tar.gz")
     full_binutils_tarball_path = os.path.join(workdir, "binutils.tar.gz")
@@ -197,8 +213,10 @@ def _download_gcc_toolchain_sources(platform, workdir, gcc_target_dir,
         os.remove(full_binutils_tarball_path)
 
 
-def _build_gcc(gcc_sources, gcc_target_dir, this_platform,
-               target_platform, platform_root, env):
+def _build_gcc(
+    gcc_sources: str, gcc_target_dir: str, this_platform: str,
+    target_platform: str, platform_root: str, env: dict
+) -> None:
     configure_full_path = os.path.join(gcc_sources, "configure")
 
     configure_command = [configure_full_path,
@@ -223,15 +241,17 @@ def _build_gcc(gcc_sources, gcc_target_dir, this_platform,
                    env=env, check=True)
 
 
-def _build_libgcc(gcc_dir):
+def _build_libgcc(gcc_dir: str) -> None:
     subprocess.run(["make", "all-target-libgcc",
                     "-j{}".format(os.cpu_count())],
                    cwd=gcc_dir, check=True)
     subprocess.run(["make", "install-target-libgcc"], cwd=gcc_dir, check=True)
 
 
-def _build_gcc_toolchain(params: ToolchainParams, gcc_sources,
-                         binutils_sources, this_platform):
+def _build_gcc_toolchain(
+    params: ToolchainParams, gcc_sources: str,
+    binutils_sources: str, this_platform: str
+) -> None:
     compiler_prefix = _get_gcc_prefix(params)
     binutils_build_dir = os.path.join(params.root_dir,
                                       f"binutils-{params.target_arch}-build")
@@ -263,7 +283,8 @@ def _build_gcc_toolchain(params: ToolchainParams, gcc_sources,
     bin_dir = os.path.join(params.root_dir, "bin")
     env["PATH"] = bin_dir + ":" + env.get("PATH", "")
 
-    print(f"Building the GCC toolchain for {params.target_arch} ({compiler_prefix})...")
+    print(f"Building the GCC toolchain for {params.target_arch} "
+          f"({compiler_prefix})...")
 
     os.makedirs(binutils_build_dir, exist_ok=True)
     _build_binutils(binutils_sources, binutils_build_dir, compiler_prefix,
@@ -294,7 +315,7 @@ def _build_gcc_toolchain(params: ToolchainParams, gcc_sources,
         shutil.rmtree(gcc_build_dir)
 
 
-def _ensure_gcc_toolchain(params: ToolchainParams):
+def _ensure_gcc_toolchain(params: ToolchainParams) -> None:
     if _is_gcc_toolchain_built(params.root_dir, _get_gcc_prefix(params)):
         print(f"Toolchain for {params.target_arch} is already built")
         return
@@ -324,11 +345,11 @@ def _ensure_gcc_toolchain(params: ToolchainParams):
     print("Successfully built GCC toolchain!")
 
 
-def _ensure_clang_toolchain(params: ToolchainParams):
+def _ensure_clang_toolchain(params: ToolchainParams) -> None:
     _ensure_dependencies(params)
 
 
-def build_toolchain(params: ToolchainParams):
+def build_toolchain(params: ToolchainParams) -> None:
     if params.type == "gcc":
         _ensure_gcc_toolchain(params)
     else:

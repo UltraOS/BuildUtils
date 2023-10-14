@@ -43,5 +43,5 @@ PACKAGE_MANAGER_TO_DEPS = {
 }
 
 
-def get_dependencies_for_toolchain(type):
+def get_dependencies_for_toolchain(type: str) -> dict:
     return PACKAGE_MANAGER_TO_DEPS[type]

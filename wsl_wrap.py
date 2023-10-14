@@ -5,7 +5,7 @@ import __main__
 import platform
 
 
-def relaunch_in_wsl_if_windows():
+def relaunch_in_wsl_if_windows() -> None:
     if platform.system() != "Windows":
         return
 

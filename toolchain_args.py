@@ -1,7 +1,9 @@
 from . import toolchain_builder as tb
+import argparse
+from typing import Optional
 
 
-def add_base_args(parser):
+def add_base_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--toolchain", choices=["gcc", "clang"],
                         default="clang", help="toolchain to build")
     parser.add_argument(
@@ -18,14 +20,18 @@ def add_base_args(parser):
         help="don't optimize the toolchain for the current CPU")
 
 
-def add_arch_args(parser):
+def add_arch_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("arch", choices=["i686", "x86_64"],
                         help="architecture to build the toolchain for")
 
 
-def params_from_args(args, platform, tc_root, tc_sources_root, arch=None):
+def params_from_args(
+    args: argparse.Namespace, platform: str, tc_root: str,
+    tc_sources_root: str, arch: Optional[str] = None
+) -> tb.ToolchainParams:
     if arch is None and hasattr(args, "arch"):
         arch = args.arch
+    assert arch
 
     return tb.ToolchainParams(
         args.toolchain, arch, platform,
