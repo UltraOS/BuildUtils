@@ -91,6 +91,11 @@ class Brew(PackageManager):
     def install_dep(dep):
         subprocess.run(["brew", "install", dep], check=True)
 
+    @staticmethod
+    def prefix(dep: str) -> str:
+        out = subprocess.check_output(["brew", "--prefix", dep], text=True)
+        return out.strip()
+
 
 PACKAGE_MANAGERS = (
     Apt,
