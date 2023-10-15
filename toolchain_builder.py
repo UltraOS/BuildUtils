@@ -25,33 +25,10 @@ class ToolchainParams:
         self.keep_build = keep_build
 
 
-GCC_VERSION = "11.2.0"
-BINUTILS_VERSION = "2.37"
+GCC_VERSION = "13.2.0"
+BINUTILS_VERSION = "2.41"
 
 SUPPORTED_SYSTEMS = ["Linux", "Darwin"]
-
-# Needed to build on M1 and other aarch64 chips
-GCC_DARWIN_PATCH = \
-"""
---- gcc/config/host-darwin.c
-+++ gcc/config/host-darwin.c
-@@ -22,6 +22,10 @@
- #include "coretypes.h"
- #include "diagnostic-core.h"
- #include "config/host-darwin.h"
-+#include "hosthooks.h"
-+#include "hosthooks-def.h"
-+
-+const struct host_hooks host_hooks = HOST_HOOKS_INITIALIZER;
-
- /* Yes, this is really supposed to work.  */
- /* This allows for a pagesize of 16384, which we have on Darwin20, but should
-"""  # noqa: E122
-
-
-def _apply_patch(target_dir: str, patch: str) -> None:
-    subprocess.check_output(["patch", "-p0"], input=patch,
-                            cwd=target_dir, text=True)
 
 
 def is_supported_system() -> bool:
@@ -199,13 +176,10 @@ def _download_gcc_toolchain_sources(
     full_gcc_tarball_path = os.path.join(workdir, "gcc.tar.gz")
     full_binutils_tarball_path = os.path.join(workdir, "binutils.tar.gz")
 
-    is_new = _download_and_extract(gcc_url, full_gcc_tarball_path,
-                                   gcc_target_dir, platform)
+    _download_and_extract(gcc_url, full_gcc_tarball_path,
+                          gcc_target_dir, platform)
     with contextlib.suppress(FileNotFoundError):
         os.remove(full_gcc_tarball_path)
-
-    if is_new and platform == "Darwin":
-        _apply_patch(gcc_target_dir, GCC_DARWIN_PATCH)
 
     _download_and_extract(binutils_url, full_binutils_tarball_path,
                           binutils_target_dir, platform)
