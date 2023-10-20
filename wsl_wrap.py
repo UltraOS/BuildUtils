@@ -14,4 +14,4 @@ def relaunch_in_wsl_if_windows() -> None:
 
     ret = subprocess.run(["wsl", "python3", this_script, *sys.argv[1:]],
                          cwd=os.path.dirname(path_to_script))
-    exit(ret.returncode)
+    sys.exit(ret.returncode)
