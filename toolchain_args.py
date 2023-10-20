@@ -21,7 +21,8 @@ def add_base_args(parser: argparse.ArgumentParser) -> None:
 
 
 def add_arch_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("arch", choices=["i686", "x86_64"],
+    parser.add_argument("arch",
+                        choices=["i686", "x86_64", "aarch32", "aarch64"],
                         help="architecture to build the toolchain for")
 
 

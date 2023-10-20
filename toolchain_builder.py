@@ -128,7 +128,10 @@ def _is_gcc_toolchain_built(tc_root: str, prefix: str) -> bool:
 def _get_gcc_prefix(params: ToolchainParams) -> str:
     arch_to_prefix = {
         "x86_64": "x86_64-{platform}",
-        "i686": "i686-{platform}"
+        "i686": "i686-{platform}",
+        "arm": "arm-{platform}",
+        "aarch32": "arm-{platform}",
+        "aarch64": "aarch64-{platform}",
     }
 
     prefix_template = arch_to_prefix[params.target_arch]
