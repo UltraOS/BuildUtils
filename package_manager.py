@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def _command_exists(cmd: str) -> bool:
-    ret = subprocess.run(["command", "-v", cmd], stdout=subprocess.DEVNULL,
+    ret = subprocess.run(f"command -v {cmd}", stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, shell=True)
     return ret.returncode == 0
 
