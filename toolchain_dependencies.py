@@ -37,7 +37,8 @@ PACKAGE_MANAGER_TO_DEPS = {
             "lld",
         ],
         "brew": [
-            "llvm"
+            "llvm",
+            "lld",
         ]
     },
 }
