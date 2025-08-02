@@ -25,8 +25,8 @@ class ToolchainParams:
         self.keep_build = keep_build
 
 
-GCC_VERSION = "13.2.0"
-BINUTILS_VERSION = "2.41"
+GCC_VERSION = "15.1.0"
+BINUTILS_VERSION = "2.45"
 
 SUPPORTED_SYSTEMS = ["Linux", "Darwin"]
 
