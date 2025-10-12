@@ -173,7 +173,7 @@ def _download_gcc_toolchain_sources(
     gcc_url = f"ftp://ftp.gnu.org/gnu/gcc/gcc-{GCC_VERSION}/"
     gcc_url += f"gcc-{GCC_VERSION}.tar.gz"
 
-    binutils_url = "https://ftp.gnu.org/gnu/binutils/"
+    binutils_url = "https://ftpmirror.gnu.org/gnu/binutils/"
     binutils_url += f"binutils-{BINUTILS_VERSION}.tar.gz"
 
     full_gcc_tarball_path = os.path.join(workdir, "gcc.tar.gz")
