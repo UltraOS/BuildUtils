@@ -3,7 +3,11 @@ import subprocess
 import shutil
 import os
 import contextlib
+import http.client
+import time
+import urllib.error
 import urllib.request
+from typing import List
 from .package_manager import install_dependencies, Brew
 from .toolchain_dependencies import get_dependencies_for_toolchain
 
@@ -27,6 +31,18 @@ class ToolchainParams:
 
 GCC_VERSION = "15.1.0"
 BINUTILS_VERSION = "2.45"
+
+GNU_MIRRORS = [
+    "https://ftpmirror.gnu.org/gnu",
+    "https://ftp.gnu.org/gnu",
+    "https://mirrors.kernel.org/gnu",
+    "https://mirrors.ocf.berkeley.edu/gnu",
+    "https://mirror.csclub.uwaterloo.ca/gnu",
+]
+
+DOWNLOAD_ATTEMPTS_PER_URL = 3
+DOWNLOAD_RETRY_DELAY_SECONDS = 5
+DOWNLOAD_TIMEOUT_SECONDS = 30
 
 SUPPORTED_SYSTEMS = ["Linux", "Darwin"]
 
@@ -138,16 +154,63 @@ def _get_gcc_prefix(params: ToolchainParams) -> str:
     return prefix_template.format(platform=params.target_platform)
 
 
+def _download_once(url: str, target_file: str) -> None:
+    part_file = target_file + ".part"
+
+    try:
+        with urllib.request.urlopen(
+            url, timeout=DOWNLOAD_TIMEOUT_SECONDS
+        ) as response, open(part_file, "wb") as out:
+            shutil.copyfileobj(response, out)
+            expected_size = response.headers.get("Content-Length")
+
+        if expected_size is not None:
+            actual_size = os.path.getsize(part_file)
+            if actual_size != int(expected_size):
+                raise OSError(f"got {actual_size} bytes out of "
+                              f"{expected_size}")
+    except BaseException:
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(part_file)
+        raise
+
+    os.replace(part_file, target_file)
+
+
+def _download(urls: List[str], target_file: str) -> None:
+    for url in urls:
+        for attempt in range(1, DOWNLOAD_ATTEMPTS_PER_URL + 1):
+            print(f"Downloading {url} (attempt {attempt})...")
+
+            try:
+                _download_once(url, target_file)
+                return
+            except urllib.error.HTTPError as err:
+                print(f"Download failed: {err}")
+
+                # The mirror answered and doesn't have the file, no point
+                # asking it again
+                if err.code < 500:
+                    break
+            except (OSError, http.client.HTTPException) as err:
+                print(f"Download failed: {err}")
+
+            if attempt != DOWNLOAD_ATTEMPTS_PER_URL:
+                time.sleep(DOWNLOAD_RETRY_DELAY_SECONDS)
+
+    raise RuntimeError(f"Failed to download {os.path.basename(target_file)} "
+                       "from every mirror")
+
+
 def _download_and_extract(
-    url: str, target_file: str, target_dir: str, platform: str
+    urls: List[str], target_file: str, target_dir: str, platform: str
 ) -> bool:
     if os.path.exists(target_dir):
         print(f"{target_dir} already exists")
         return False
 
     if not os.path.exists(target_file):
-        print(f"Downloading {url}...")
-        urllib.request.urlretrieve(url, target_file)
+        _download(urls, target_file)
     else:
         print(f"{target_file} already exists, not downloading")
 
@@ -166,25 +229,38 @@ def _download_and_extract(
     return True
 
 
+def _gcc_source_urls() -> List[str]:
+    path = f"gcc/gcc-{GCC_VERSION}/gcc-{GCC_VERSION}.tar.gz"
+    urls = [f"{mirror}/{path}" for mirror in GNU_MIRRORS]
+
+    urls.insert(2, "https://gcc.gnu.org/pub/gcc/releases/"
+                   f"gcc-{GCC_VERSION}/gcc-{GCC_VERSION}.tar.gz")
+    return urls
+
+
+def _binutils_source_urls() -> List[str]:
+    path = f"binutils/binutils-{BINUTILS_VERSION}.tar.gz"
+    urls = [f"{mirror}/{path}" for mirror in GNU_MIRRORS]
+
+    urls.insert(2, "https://sourceware.org/pub/binutils/releases/"
+                   f"binutils-{BINUTILS_VERSION}.tar.gz")
+    return urls
+
+
 def _download_gcc_toolchain_sources(
     platform: str, workdir: str, gcc_target_dir: str,
     binutils_target_dir: str
 ) -> None:
-    gcc_url = f"ftp://ftp.gnu.org/gnu/gcc/gcc-{GCC_VERSION}/"
-    gcc_url += f"gcc-{GCC_VERSION}.tar.gz"
-
-    binutils_url = "https://ftpmirror.gnu.org/gnu/binutils/"
-    binutils_url += f"binutils-{BINUTILS_VERSION}.tar.gz"
-
     full_gcc_tarball_path = os.path.join(workdir, "gcc.tar.gz")
     full_binutils_tarball_path = os.path.join(workdir, "binutils.tar.gz")
 
-    _download_and_extract(gcc_url, full_gcc_tarball_path,
+    _download_and_extract(_gcc_source_urls(), full_gcc_tarball_path,
                           gcc_target_dir, platform)
     with contextlib.suppress(FileNotFoundError):
         os.remove(full_gcc_tarball_path)
 
-    _download_and_extract(binutils_url, full_binutils_tarball_path,
+    _download_and_extract(_binutils_source_urls(),
+                          full_binutils_tarball_path,
                           binutils_target_dir, platform)
     with contextlib.suppress(FileNotFoundError):
         os.remove(full_binutils_tarball_path)
