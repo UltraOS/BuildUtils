@@ -107,7 +107,7 @@ def _build_binutils(
     subprocess.run([configure_full_path,
                     f"--target={target}",
                     f"--prefix={platform_root}",
-                    "--with-sysroot"
+                    "--with-sysroot",
                     "--disable-nls",
                     "--disable-multilib",
                     "--disable-werror"],
