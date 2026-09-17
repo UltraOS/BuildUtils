@@ -3,27 +3,29 @@ import argparse
 from typing import Optional
 
 
-def add_base_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--toolchain", choices=["gcc", "clang"],
-                        default="clang", help="toolchain to build")
-    parser.add_argument(
+# Add the toolchain arguments to a parser or to an argument group
+# the caller made for them, the caller owns the help layout
+def add_base_args(target: argparse._ActionsContainer) -> None:
+    target.add_argument("--toolchain", choices=["gcc", "clang"],
+                        default="clang", help="Toolchain to build")
+    target.add_argument(
         "--skip-toolchain-dependencies", action="store_true",
-        help="don't attempt to fetch the toolchain dependencies")
-    parser.add_argument(
+        help="Don't attempt to fetch the toolchain dependencies")
+    target.add_argument(
         "--keep-toolchain-sources", action="store_true",
-        help="don't remove the toolchain sources after build")
-    parser.add_argument(
+        help="Don't remove the toolchain sources after build")
+    target.add_argument(
         "--keep-toolchain-build", action="store_true",
-        help="don't remove the toolchain build directories")
-    parser.add_argument(
+        help="Don't remove the toolchain build directories")
+    target.add_argument(
         "--no-tune-native", action="store_true",
-        help="don't optimize the toolchain for the current CPU")
+        help="Don't optimize the toolchain for the current CPU")
 
 
 def add_arch_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("arch",
                         choices=["i686", "x86_64", "aarch32", "aarch64"],
-                        help="architecture to build the toolchain for")
+                        help="Architecture to build the toolchain for")
 
 
 def params_from_args(
