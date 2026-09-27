@@ -76,6 +76,25 @@ class Pacman(PackageManager):
                        check=True)
 
 
+class Dnf(PackageManager):
+    name = "dnf"
+
+    @staticmethod
+    def detect() -> bool:
+        return _command_exists(Dnf.name)
+
+    @staticmethod
+    def is_dep_installed(dep: str) -> bool:
+        ret = subprocess.run(["rpm", "-q", "--whatprovides", dep],
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL)
+        return ret.returncode == 0
+
+    @staticmethod
+    def install_dep(dep: str) -> None:
+        subprocess.run(["sudo", "dnf", "install", "-y", dep], check=True)
+
+
 class Brew(PackageManager):
     name = "brew"
 
@@ -103,6 +122,7 @@ class Brew(PackageManager):
 PACKAGE_MANAGERS = (
     Apt,
     Pacman,
+    Dnf,
     Brew,
 )
 

@@ -16,6 +16,18 @@ PACKAGE_MANAGER_TO_DEPS = {
             "libmpc",
             "mpfr",
         ],
+        "dnf": [
+            "gcc",
+            "gcc-c++",
+            "make",
+            "bison",
+            "flex",
+            "gmp-devel",
+            "libmpc-devel",
+            "mpfr-devel",
+            "texinfo",
+            "isl-devel",
+        ],
         "brew": [
             "coreutils",
             "bison",
@@ -33,6 +45,10 @@ PACKAGE_MANAGER_TO_DEPS = {
             "lld"
         ],
         "pacman": [
+            "clang",
+            "lld",
+        ],
+        "dnf": [
             "clang",
             "lld",
         ],
