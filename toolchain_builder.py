@@ -251,8 +251,12 @@ def _download_gcc_toolchain_sources(
     platform: str, workdir: str, gcc_target_dir: str,
     binutils_target_dir: str
 ) -> None:
-    full_gcc_tarball_path = os.path.join(workdir, "gcc.tar.gz")
-    full_binutils_tarball_path = os.path.join(workdir, "binutils.tar.gz")
+    full_gcc_tarball_path = os.path.join(
+        workdir, f"gcc-{GCC_VERSION}.tar.gz"
+    )
+    full_binutils_tarball_path = os.path.join(
+        workdir, f"binutils-{BINUTILS_VERSION}.tar.gz"
+    )
 
     _download_and_extract(_gcc_source_urls(), full_gcc_tarball_path,
                           gcc_target_dir, platform)
@@ -306,10 +310,13 @@ def _build_gcc_toolchain(
     binutils_sources: str, this_platform: str
 ) -> None:
     compiler_prefix = _get_gcc_prefix(params)
-    binutils_build_dir = os.path.join(params.root_dir,
-                                      f"binutils-{params.target_arch}-build")
-    gcc_build_dir = os.path.join(params.root_dir,
-                                 f"gcc-{params.target_arch}-build")
+    binutils_build_dir = os.path.join(
+        params.root_dir,
+        f"binutils-{BINUTILS_VERSION}-{params.target_arch}-build"
+    )
+    gcc_build_dir = os.path.join(
+        params.root_dir, f"gcc-{GCC_VERSION}-{params.target_arch}-build"
+    )
 
     is_mingw = "mingw" in params.target_platform
 
@@ -377,8 +384,8 @@ def _ensure_gcc_toolchain(params: ToolchainParams) -> None:
 
     _ensure_dependencies(params)
 
-    gcc_dir = "gcc_sources"
-    binutils_dir = "binutils_sources"
+    gcc_dir = f"gcc_{GCC_VERSION}_sources"
+    binutils_dir = f"binutils_{BINUTILS_VERSION}_sources"
     gcc_dir_full_path = os.path.join(params.sources_dir, gcc_dir)
     binutils_dir_full_path = os.path.join(params.sources_dir, binutils_dir)
 
