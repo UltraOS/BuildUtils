@@ -29,8 +29,8 @@ class ToolchainParams:
         self.keep_build = keep_build
 
 
-GCC_VERSION = "15.1.0"
-BINUTILS_VERSION = "2.45"
+GCC_VERSION = "16.2.0"
+BINUTILS_VERSION = "2.47"
 
 GNU_MIRRORS = [
     "https://ftpmirror.gnu.org/gnu",
