@@ -136,9 +136,18 @@ def _build_binutils(
 def _is_gcc_toolchain_built(tc_root: str, prefix: str) -> bool:
     full_path = os.path.join(tc_root, "bin", f"{prefix}-")
 
-    # TODO: a more "reliable" check?
-    return (os.path.isfile(full_path + "gcc") and
-            os.path.isfile(full_path + "ld"))
+    if not os.path.isfile(full_path + f"gcc-{GCC_VERSION}"):
+        return False
+
+    try:
+        out = subprocess.check_output([full_path + "ld", "--version"],
+                                      text=True)
+    except (OSError, subprocess.CalledProcessError):
+        return False
+
+    version = out.partition("\n")[0].rpartition(" ")[2]
+    return (version == BINUTILS_VERSION or
+            version.startswith(f"{BINUTILS_VERSION}."))
 
 
 def _get_gcc_prefix(params: ToolchainParams) -> str:
