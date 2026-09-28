@@ -330,8 +330,8 @@ def _build_gcc_toolchain(
         else:
             cflags.append("-march=native")
 
-    env["CFLAGS"] = env.get("CFLAGS", "") + " ".join(cflags)
-    env["CXXFLAGS"] = env.get("CXXFLAGS", "") + " ".join(cflags)
+    for var in ("CFLAGS", "CXXFLAGS"):
+        env[var] = " ".join(filter(None, [env.get(var), *cflags]))
 
     bin_dir = os.path.join(params.root_dir, "bin")
     env["PATH"] = bin_dir + ":" + env.get("PATH", "")
